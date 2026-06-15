@@ -1,14 +1,28 @@
 # Glossary
 
-- **TRAX** — the standalone distributed workflow and saga orchestration system.
-- **Saga template** — the durable definition of a workflow: ordered step templates plus metadata.
-- **Saga instance** — one runtime execution of a saga template.
-- **Saga step template** — the definition of one workflow step.
-- **Saga step instance** — one runtime execution record of a saga step.
-- **Coordinator** — the runtime actor that schedules steps, consumes step results, and advances saga state. See [traxcoord](components/traxcoord.md).
-- **Control API** — the TRAX read/control surface for templates, clusters, saga status, trees, and operator actions. See [traxctrl](components/traxctrl.md).
-- **Executor** — a worker bound to a saga-step route that performs forward execution and, where defined, compensation.
-- **Submitter** — a client-side runtime component that submits saga instances into a cluster.
-- **Cluster** — an execution namespace for TRAX routing and workflow state partitioning.
-- **Compensation** — reverse-path execution for already-committed steps after a failure.
-- **Sub-saga** — a child workflow spawned from within a parent step and tracked as part of a saga hierarchy.
+- **TRAX**: standalone distributed workflow and saga orchestration system.
+- **Saga template**: durable workflow definition containing ordered saga-step template IDs plus labels, tags, and metadata. See [Saga Template](concepts/saga-template.md).
+- **Saga step template**: durable definition of one executable workflow step. See [Saga Step Template](concepts/saga-step-template.md).
+- **Saga instance**: one runtime execution of a saga template. See [Saga Instance](concepts/saga-instance.md).
+- **Saga step instance**: one runtime execution record for a single step within a saga instance. See [Saga Step Instance](concepts/saga-step-instance.md).
+- **Cluster**: execution namespace used for routing, table partitioning, and coordinator/executor grouping. See [Cluster](concepts/cluster.md).
+- **Affinity**: coordinator grouping value used in RabbitMQ routing so responses return to the right coordinator group. See [Affinity](concepts/affinity.md).
+- **Coordinator**: `traxcoord`; schedules steps, consumes results, performs state transitions, and drives compensation. See [Coordinator](concepts/coordinator.md).
+- **Control API / Control plane**: `traxctrl`; read/control surface for clusters, templates, instances, annexes, hierarchy, and operator actions. See [Control Plane](concepts/control-plane.md).
+- **Submitter**: client-side runtime that announces to coordinators and submits saga instances. See [Submitter](concepts/submitter.md).
+- **Executor**: worker bound to a saga-step route that runs an `IdempotentService`. See [Executor](concepts/executor.md).
+- **IdempotentService**: executor contract with execute and compensate methods keyed by deterministic idempotency strings. See [Idempotent Service](concepts/idempotent-service.md).
+- **Idempotency key**: durable uniqueness key used to make repeated saga/step creation or external operation retries safe. See [Idempotency](concepts/idempotency.md).
+- **Saga state**: high-level lifecycle state of a saga instance. See [Saga State](concepts/saga-state.md).
+- **Step state**: lifecycle state of a saga-step instance. See [Step State](concepts/step-state.md).
+- **Execution history**: structured log of execution/compensation attempts on a step instance. See [Execution History](concepts/execution-history.md).
+- **Compensation**: reverse-path execution for already successful steps after a later step fails. See [Compensation](concepts/compensation.md).
+- **Blocked saga**: saga requiring manual intervention, often because compensation cannot proceed safely.
+- **Force-compensated**: operator override that marks a blocked saga compensated with an audit reason.
+- **Sub-saga**: child workflow spawned from within a parent step and tracked with parent/root/depth fields. See [Sub-saga](concepts/sub-saga.md).
+- **RabbitMQ routing**: per-cluster topic exchange and request/response routing-key model. See [RabbitMQ Routing](concepts/rabbitmq-routing.md).
+- **PostgreSQL store**: durable state backend for templates, clusters, saga instances, step instances, annexes, and notifications. See [PostgreSQL Store](concepts/postgresql-store.md).
+- **Notification**: PostgreSQL wakeup event on `trax_saga_events` or `trax_template_events`. See [Notifications](concepts/notifications.md).
+- **Template hot reload**: coordinator reload of template changes without restart. See [Template Hot Reload](concepts/template-hot-reload.md).
+- **Saga annex**: binary attachment owned by a saga instance and stored in TRAX. See [Saga Annex](concepts/saga-annex.md).
+- **Imported daemons2 docs**: copied source-system docs under `docs/imported-daemons2/` that preserve old TRAX, saga, E2E, RabbitMQ, and domain workflow knowledge.

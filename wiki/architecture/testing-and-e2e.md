@@ -1,31 +1,36 @@
 # Testing and E2E
 
-TRAX ships with:
+TRAX ships unit tests plus a compose-backed E2E suite.
 
-- unit tests in `pkg/trax` and `pkg/mq/common`;
-- compose-backed end-to-end tests in `tests/e2e/trax`;
-- a reusable E2E harness in `tests/e2e/common`.
+## Unit Tests
 
-## E2E shape
+Important package test surfaces:
 
-The TRAX E2E environment centers on:
+- `pkg/trax`
+- `pkg/mq/common`
+- `pkg/common`
+- `pkg/cache`
 
-- PostgreSQL
-- RabbitMQ
-- Redis
-- `traxctrl`
-- multiple `traxcoord` instances
-- one submitter container
-- multiple `traxcli executor` containers
-- a Go test runner
+The current code requires a modern Go toolchain. A stale shell Go version will fail before meaningful TRAX verification.
 
-## Coverage intent
+## E2E Tests
 
-The E2E suite covers:
+The standalone E2E suite lives in `tests/e2e/trax` and uses `tests/e2e/common` helpers.
 
-- saga template creation;
-- multi-step committed workflows;
-- compensation paths;
-- deep sub-saga hierarchy;
-- topology and routing behavior;
-- idempotency behavior.
+It covers:
+
+- smoke template setup;
+- successful multi-step saga execution;
+- compensation;
+- topology/routing;
+- idempotency;
+- deep sub-saga execution;
+- hierarchy queries.
+
+The compose environment includes PostgreSQL, RabbitMQ, Redis, `traxctrl`, multiple `traxcoord` instances, executor workers, and a test runner.
+
+## Imported Source Test Docs
+
+Many broader test docs from `daemons2` are now copied under `docs/imported-daemons2/`. They contain valuable old coverage analysis and real-world workflow examples, but not all of them are standalone TRAX requirements.
+
+See [Testing and E2E Operations](../operations/testing.md) for commands and operational notes.
