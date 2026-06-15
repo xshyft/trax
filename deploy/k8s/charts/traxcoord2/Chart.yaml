@@ -1,0 +1,6 @@
+apiVersion: v2
+name: traxcoord2
+description: Trax Coordinator service 2 with affinity group 2
+type: application
+version: 0.1.0
+appVersion: "latest"

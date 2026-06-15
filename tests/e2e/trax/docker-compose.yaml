@@ -1,0 +1,466 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: agora_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d agora_db"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 10
+    ports:
+      - "6379:6379"
+
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  init-db:
+    image: postgres:15
+    command: >
+      bash -c "
+      psql -h postgres -U postgres -d agora_db -f /scripts/init_shared_pgsql.sql &&
+      psql -h postgres -U postgres -d agora_db -f /scripts/init_trax_pgsql.sql &&
+      psql -h postgres -U postgres -d agora_db -f /scripts/init_laser_pgsql.sql &&
+      psql -h postgres -U postgres -d agora_db -f /scripts/init_instrmgr_pgsql.sql &&
+      psql -h postgres -U postgres -d agora_db -f /scripts/init_test_cluster.sql
+      "
+    environment:
+      PGPASSWORD: postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ../../../deploy/k8s/init/init_shared_pgsql.sql:/scripts/init_shared_pgsql.sql:ro
+      - ../../../deploy/k8s/init/init_trax_pgsql.sql:/scripts/init_trax_pgsql.sql:ro
+      - ../../../deploy/k8s/init/init_laser_pgsql.sql:/scripts/init_laser_pgsql.sql:ro
+      - ../../../deploy/k8s/init/init_instrmgr_pgsql.sql:/scripts/init_instrmgr_pgsql.sql:ro
+      - ./init_test_cluster.sql:/scripts/init_test_cluster.sql:ro
+
+  traxctrl:
+    image: localhost:5555/trax.daemons:${BRANCH_TAG:-latest}
+    command: ["traxctrl"]
+    environment:
+      POSTGRESQL_CONN_STRING: "postgres://postgres:postgres@postgres:5432/agora_db?sslmode=disable"
+      RABBITMQ_CONN_STRING: "amqp://guest:guest@rabbitmq:5672/"
+      REDIS_ADDRESS: redis:6379
+      TRAX_CLUSTER_ID: "e2e_test_cluster"
+      DEPLOYMENT_ENV_TYPE: "e2e-test"
+      DEPLOYMENT_ENV_LEGAL_TYPE: "csd"
+      LOG_LEVEL: debug
+      ENABLE_TESTING_ENDPOINTS: "true"
+      RABBITMQ_MAX_CHANNELS: "300"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      init-db:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:17202/api/v1/health"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+    ports:
+      - "17200:17202"
+
+  traxcoord1:
+    image: localhost:5555/trax.daemons:${BRANCH_TAG:-latest}
+    command: ["traxcoord"]
+    environment:
+      POSTGRESQL_CONN_STRING: "postgres://postgres:postgres@postgres:5432/agora_db?sslmode=disable"
+      RABBITMQ_CONN_STRING: "amqp://guest:guest@rabbitmq:5672/"
+      REDIS_ADDRESS: redis:6379
+      TRAX_CLUSTER_ID: "e2e_test_cluster"
+      TRAX_COORDINATOR_AFFINITY_GROUP: "1"
+      LOG_LEVEL: debug
+      ENABLE_TESTING_ENDPOINTS: "true"
+      RABBITMQ_MAX_CHANNELS: "300"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      init-db:
+        condition: service_completed_successfully
+      traxctrl:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:17201/api/v1/health"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+    ports:
+      - "17220:17201"
+
+  traxcoord2:
+    image: localhost:5555/trax.daemons:${BRANCH_TAG:-latest}
+    command: ["traxcoord"]
+    environment:
+      POSTGRESQL_CONN_STRING: "postgres://postgres:postgres@postgres:5432/agora_db?sslmode=disable"
+      RABBITMQ_CONN_STRING: "amqp://guest:guest@rabbitmq:5672/"
+      REDIS_ADDRESS: redis:6379
+      TRAX_CLUSTER_ID: "e2e_test_cluster"
+      TRAX_COORDINATOR_AFFINITY_GROUP: "2"
+      LOG_LEVEL: debug
+      ENABLE_TESTING_ENDPOINTS: "true"
+      RABBITMQ_MAX_CHANNELS: "300"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      init-db:
+        condition: service_completed_successfully
+      traxctrl:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:17201/api/v1/health"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+    ports:
+      - "17221:17201"
+
+  traxcoord3:
+    image: localhost:5555/trax.daemons:${BRANCH_TAG:-latest}
+    command: ["traxcoord"]
+    environment:
+      POSTGRESQL_CONN_STRING: "postgres://postgres:postgres@postgres:5432/agora_db?sslmode=disable"
+      RABBITMQ_CONN_STRING: "amqp://guest:guest@rabbitmq:5672/"
+      REDIS_ADDRESS: redis:6379
+      TRAX_CLUSTER_ID: "e2e_test_cluster"
+      TRAX_COORDINATOR_AFFINITY_GROUP: "3"
+      LOG_LEVEL: debug
+      ENABLE_TESTING_ENDPOINTS: "true"
+      RABBITMQ_MAX_CHANNELS: "300"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      init-db:
+        condition: service_completed_successfully
+      traxctrl:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:17201/api/v1/health"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+    ports:
+      - "17222:17201"
+
+  traxcli-submitter:
+    image: localhost:5555/trax.clis:${BRANCH_TAG:-latest}
+    entrypoint: []  # Override to empty
+    command: ["sleep", "infinity"]  # Keep container alive for test to exec into
+    environment:
+      RABBITMQ_CONN_STRING: "amqp://guest:guest@rabbitmq:5672/"
+      REDIS_ADDRESS: redis:6379
+      TRAX_COORDINATOR_BASE_URL: http://traxcoord1:17201/api/v1
+      TRAX_SUBMITTER_ANNOUNCEMENT_INTERVAL: "5s"
+      LOG_LEVEL: debug
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      traxctrl:
+        condition: service_healthy
+      traxcoord1:
+        condition: service_healthy
+
+  # Executor for step 1
+  executor-step1:
+    image: localhost:5555/trax.clis:${BRANCH_TAG:-latest}
+    command:
+      - "traxcli"
+      - "executor"
+      - "--trax-cluster-id=e2e_test_cluster"
+      - "--rabbitmq-url=amqp://guest:guest@rabbitmq:5672/"
+      - "--saga-template-id=seven_step_sleep_saga"
+      - "--saga-step-template-id=step1_sleep_1000ms"
+      - "--idempotency-storage-backend=inmem"
+      - "--exec-sim-status=ok"
+      - "--exec-sim-delay=1000ms"
+      - "--exec-sim-result={\"step\":1,\"status\":\"success\"}"
+      - "--comp-sim-status=ok"
+    environment:
+      REDIS_ADDRESS: redis:6379
+      LOG_LEVEL: debug
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      traxcoord1:
+        condition: service_healthy
+
+  # Executor for step 2
+  executor-step2:
+    image: localhost:5555/trax.clis:${BRANCH_TAG:-latest}
+    command:
+      - "traxcli"
+      - "executor"
+      - "--trax-cluster-id=e2e_test_cluster"
+      - "--rabbitmq-url=amqp://guest:guest@rabbitmq:5672/"
+      - "--saga-template-id=seven_step_sleep_saga"
+      - "--saga-step-template-id=step2_sleep_1000ms"
+      - "--idempotency-storage-backend=inmem"
+      - "--exec-sim-status=ok"
+      - "--exec-sim-delay=1000ms"
+      - "--exec-sim-result={\"step\":2,\"status\":\"success\"}"
+      - "--comp-sim-status=ok"
+    environment:
+      REDIS_ADDRESS: redis:6379
+      LOG_LEVEL: debug
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      traxcoord1:
+        condition: service_healthy
+
+  # Executor for step 3
+  executor-step3:
+    image: localhost:5555/trax.clis:${BRANCH_TAG:-latest}
+    command:
+      - "traxcli"
+      - "executor"
+      - "--trax-cluster-id=e2e_test_cluster"
+      - "--rabbitmq-url=amqp://guest:guest@rabbitmq:5672/"
+      - "--saga-template-id=seven_step_sleep_saga"
+      - "--saga-step-template-id=step3_sleep_1000ms"
+      - "--idempotency-storage-backend=inmem"
+      - "--exec-sim-status=ok"
+      - "--exec-sim-delay=1000ms"
+      - "--exec-sim-result={\"step\":3,\"status\":\"success\"}"
+      - "--comp-sim-status=ok"
+    environment:
+      REDIS_ADDRESS: redis:6379
+      LOG_LEVEL: debug
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      traxcoord1:
+        condition: service_healthy
+
+  # Executor for step 4
+  executor-step4:
+    image: localhost:5555/trax.clis:${BRANCH_TAG:-latest}
+    command:
+      - "traxcli"
+      - "executor"
+      - "--trax-cluster-id=e2e_test_cluster"
+      - "--rabbitmq-url=amqp://guest:guest@rabbitmq:5672/"
+      - "--saga-template-id=seven_step_sleep_saga"
+      - "--saga-step-template-id=step4_sleep_1000ms"
+      - "--idempotency-storage-backend=inmem"
+      - "--exec-sim-status=ok"
+      - "--exec-sim-delay=1000ms"
+      - "--exec-sim-result={\"step\":4,\"status\":\"success\"}"
+      - "--comp-sim-status=ok"
+    environment:
+      REDIS_ADDRESS: redis:6379
+      LOG_LEVEL: debug
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      traxcoord1:
+        condition: service_healthy
+
+  # Executor for step 5
+  executor-step5:
+    image: localhost:5555/trax.clis:${BRANCH_TAG:-latest}
+    command:
+      - "traxcli"
+      - "executor"
+      - "--trax-cluster-id=e2e_test_cluster"
+      - "--rabbitmq-url=amqp://guest:guest@rabbitmq:5672/"
+      - "--saga-template-id=seven_step_sleep_saga"
+      - "--saga-step-template-id=step5_sleep_1000ms"
+      - "--idempotency-storage-backend=inmem"
+      - "--exec-sim-status=ok"
+      - "--exec-sim-delay=1000ms"
+      - "--exec-sim-result={\"step\":5,\"status\":\"success\"}"
+      - "--comp-sim-status=ok"
+    environment:
+      REDIS_ADDRESS: redis:6379
+      LOG_LEVEL: debug
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      traxcoord1:
+        condition: service_healthy
+
+  # Executor for step 6
+  executor-step6:
+    image: localhost:5555/trax.clis:${BRANCH_TAG:-latest}
+    command:
+      - "traxcli"
+      - "executor"
+      - "--trax-cluster-id=e2e_test_cluster"
+      - "--rabbitmq-url=amqp://guest:guest@rabbitmq:5672/"
+      - "--saga-template-id=seven_step_sleep_saga"
+      - "--saga-step-template-id=step6_sleep_1000ms"
+      - "--idempotency-storage-backend=inmem"
+      - "--exec-sim-status=ok"
+      - "--exec-sim-delay=1000ms"
+      - "--exec-sim-result={\"step\":6,\"status\":\"success\"}"
+      - "--comp-sim-status=ok"
+    environment:
+      REDIS_ADDRESS: redis:6379
+      LOG_LEVEL: debug
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      traxcoord1:
+        condition: service_healthy
+
+  # Executor for step 7
+  executor-step7:
+    image: localhost:5555/trax.clis:${BRANCH_TAG:-latest}
+    command:
+      - "traxcli"
+      - "executor"
+      - "--trax-cluster-id=e2e_test_cluster"
+      - "--rabbitmq-url=amqp://guest:guest@rabbitmq:5672/"
+      - "--saga-template-id=seven_step_sleep_saga"
+      - "--saga-step-template-id=step7_sleep_1000ms"
+      - "--idempotency-storage-backend=inmem"
+      - "--exec-sim-status=ok"
+      - "--exec-sim-delay=1000ms"
+      - "--exec-sim-result={\"step\":7,\"status\":\"success\"}"
+      - "--comp-sim-status=ok"
+    environment:
+      REDIS_ADDRESS: redis:6379
+      LOG_LEVEL: debug
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      traxcoord1:
+        condition: service_healthy
+
+  # NOTE: Compensation and sub-saga executors are started dynamically via
+  # docker exec into traxcli-submitter during test setup (framework.StartExecutorsViaDockerExec).
+  # This keeps the container count manageable for Docker Desktop.
+
+  test-runner:
+    image: qomet/golang-builder:1.23.latest
+    platform: linux/amd64
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        # Use test.sh for E2E tests with comprehensive summary
+        export GOMAXPROCS=1
+
+        if [ -n "$${TEST_RUN_PATTERN}" ]; then
+          /workspace/test.sh --run "$${TEST_RUN_PATTERN}" --timeout 360m github.com/kamcpp/trax/tests/e2e/trax/...
+        else
+          /workspace/test.sh --timeout 360m github.com/kamcpp/trax/tests/e2e/trax/...
+        fi
+    working_dir: /workspace
+    environment:
+      TRAX_CONTROLLER_BASE_URL: http://traxctrl:17202/api/v1
+      TRAX_COORDINATOR_BASE_URL: http://traxcoord1:17201/api/v1
+      TRAX_COORDINATOR1_BASE_URL: http://traxcoord1:17201/api/v1
+      TRAX_COORDINATOR2_BASE_URL: http://traxcoord2:17201/api/v1
+      TRAX_COORDINATOR3_BASE_URL: http://traxcoord3:17201/api/v1
+      RABBITMQ_CONN_STRING: "amqp://guest:guest@rabbitmq:5672/"
+      RABBITMQ_MANAGEMENT_URL: "http://rabbitmq:15672"
+      RABBITMQ_MANAGEMENT_USER: guest
+      RABBITMQ_MANAGEMENT_PASS: guest
+      PGSQL_HOST: postgres
+      PGSQL_PORT: 5432
+      PGSQL_USER: postgres
+      PGSQL_PASSWORD: postgres
+      PGSQL_DATABASE: agora_db
+      TEST_RUN_PATTERN: ${TEST_RUN_PATTERN:-}
+      GO111MODULE: "on"
+      CGO_ENABLED: "1"
+      GOCACHE: /workspace/.gobuild
+      GOPATH: /go
+      GOMODCACHE: /go/pkg/mod
+      # Enable incremental CLI builds
+      TESTS_BIN_DIR: /workspace/.tests-bin
+      # Test results capture
+      TEST_RESULTS_BASE_DIR: /test-results/e2e
+      TEST_SUITE_NAME: trax
+      TEST_SESSION_ID: ${TEST_SESSION_ID}
+    depends_on:
+      traxcli-submitter:
+        condition: service_started
+      traxctrl:
+        condition: service_healthy
+      traxcoord1:
+        condition: service_healthy
+      traxcoord2:
+        condition: service_healthy
+      traxcoord3:
+        condition: service_healthy
+      executor-step1:
+        condition: service_started
+      executor-step2:
+        condition: service_started
+      executor-step3:
+        condition: service_started
+      executor-step4:
+        condition: service_started
+      executor-step5:
+        condition: service_started
+      executor-step6:
+        condition: service_started
+      executor-step7:
+        condition: service_started
+    volumes:
+      - ../../../:/workspace
+      - ../../../.gobuild:/workspace/.gobuild
+      - ../../../.gopkg:/go/pkg/mod
+      - ../../../.tests-bin:/workspace/.tests-bin
+      - ../../../.test-results:/test-results:rw
+      - /var/run/docker.sock:/var/run/docker.sock:ro

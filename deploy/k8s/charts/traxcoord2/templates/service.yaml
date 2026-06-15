@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Chart.Name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Chart.Name }}
+    version: "{{ .Chart.AppVersion }}"
+spec:
+  type: {{ .Values.traxcoord2.service.type }}
+  ports:
+    - port: {{ .Values.traxcoord2.service.port }}
+      targetPort: {{ .Values.traxcoord2.service.targetPort }}
+      protocol: TCP
+      name: api
+  selector:
+    app: {{ .Chart.Name }}

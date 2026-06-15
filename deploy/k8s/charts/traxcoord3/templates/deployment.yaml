@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Chart.Name }}
+    version: "{{ .Chart.AppVersion }}"
+    affinity-group: "3"
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}
+        version: "{{ .Chart.AppVersion }}"
+        affinity-group: "3"
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values: ["traxcoord1", "traxcoord2", "traxcoord3"]
+            topologyKey: kubernetes.io/hostname
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            preference:
+              matchExpressions:
+              - key: affinity-group
+                operator: In
+                values: ["3"]
+      containers:
+        - name: {{ .Chart.Name }}
+          {{- $imageTag := .Values.traxcoord3.image.tag }}
+          {{- if not $imageTag }}
+            {{- $imageTag = .Values.global.tag }}
+          {{- end }}
+          {{- if .Values.traxcoord3.image.registry }}
+          image: "{{ .Values.traxcoord3.image.registry }}/{{ .Values.traxcoord3.image.repository }}:{{ $imageTag }}"
+          {{- else }}
+          image: "{{ .Values.traxcoord3.image.repository }}:{{ $imageTag }}"
+          {{- end }}
+          imagePullPolicy: {{ .Values.traxcoord3.image.pullPolicy }}
+          args:
+            - traxcoord
+          ports:
+            - name: api
+              containerPort: 17201
+              protocol: TCP
+          env:
+            - name: POSTGRESQL_CONN_STRING
+              value: {{ .Values.traxcoord3.env.postgresqlConnString | quote }}
+            - name: RABBITMQ_CONN_STRING
+              value: {{ .Values.traxcoord3.env.rabbitmqConnString | quote }}
+            - name: RABBITMQ_MAX_CHANNELS
+              value: {{ .Values.traxcoord3.env.rabbitmqMaxChannels | quote }}
+            - name: REDIS_ADDRESS
+              value: {{ .Values.traxcoord3.env.redisAddress | quote }}
+            - name: TRAX_COORDINATOR_ID
+              value: "traxcoord3"
+            - name: TRAX_COORDINATOR_AFFINITY_GROUP
+              value: "3"
+          resources:
+            {{- toYaml .Values.traxcoord3.resources | nindent 12 }}
+          lifecycle:
+            postStart:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 30"]
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: api
+            initialDelaySeconds: 45
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: api
+            initialDelaySeconds: 20
+            periodSeconds: 5
+            failureThreshold: 3

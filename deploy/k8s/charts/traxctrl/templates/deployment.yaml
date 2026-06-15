@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Chart.Name }}
+    version: "{{ .Chart.AppVersion }}"
+spec:
+  replicas: {{ .Values.traxctrl.replicaCount }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}
+        version: "{{ .Chart.AppVersion }}"
+    spec:
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          {{- $imageTag := .Values.traxctrl.image.tag }}
+          {{- if not $imageTag }}
+            {{- $imageTag = .Values.global.tag }}
+          {{- end }}
+          {{- if .Values.traxctrl.image.registry }}
+          image: "{{ .Values.traxctrl.image.registry }}/{{ .Values.traxctrl.image.repository }}:{{ $imageTag }}"
+          {{- else }}
+          image: "{{ .Values.traxctrl.image.repository }}:{{ $imageTag }}"
+          {{- end }}
+          imagePullPolicy: {{ .Values.traxctrl.image.pullPolicy }}
+          args:
+            - traxctrl
+          ports:
+            - name: api
+              containerPort: {{ .Values.traxctrl.service.targetPort }}
+              protocol: TCP
+          env:
+            - name: POSTGRESQL_CONN_STRING
+              value: {{ .Values.traxctrl.env.postgresqlConnString | quote }}
+            - name: RABBITMQ_CONN_STRING
+              value: {{ .Values.traxctrl.env.rabbitmqConnString | quote }}
+            - name: RABBITMQ_MAX_CHANNELS
+              value: {{ .Values.traxctrl.env.rabbitmqMaxChannels | quote }}
+            - name: REDIS_ADDRESS
+              value: {{ .Values.traxctrl.env.redisAddress | quote }}
+            - name: DEPLOYMENT_ENV_TYPE
+              value: {{ .Values.traxctrl.env.deploymentEnvType | quote }}
+            - name: DEPLOYMENT_ENV_LEGAL_TYPE
+              value: {{ .Values.traxctrl.env.deploymentEnvLegalType | quote }}
+          resources:
+            {{- toYaml .Values.traxctrl.resources | nindent 12 }}
+          lifecycle:
+            postStart:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 30"]
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: api
+            initialDelaySeconds: 45
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: api
+            initialDelaySeconds: 20
+            periodSeconds: 5
