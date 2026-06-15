@@ -1,0 +1,46 @@
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+bin
+!apps/tools/*/bin
+!apps/tools/*/bin/**
+.DS_Store
+.gobuild
+.gobuild-test
+.gopkg
+.tests-bin
+.test-results
+tmp
+.data
+gen-docs
+.vscode
+.env*
+.output
+/cli
+/daemons
+**/node_modules/*
+gen-pkg
+gen-pkg2
+iso20022-processor/.jqwik-database
+
+# FIX proxy configuration with sensitive credentials
+data/fix/participants.yaml
+
+# Claude Code settings
+.claude/settings.local.json
+.claude/
+.codex/
+pkg/clis/admui/webapp/src/lib/screenManager/component-registry.json
+scripts/__pycache__/
+.release-betha-state.json
+tests/e2e/laser/artifacts/
+tests/e2e/laser/.lattice-archive/
+
+# Local Obsidian vault state for the LLM wiki
+llm-wiki/wiki/.obsidian/
+
+wiki/index.html

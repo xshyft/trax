@@ -1,0 +1,11 @@
+FROM golang:1.24 AS build
+WORKDIR /src
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /out/traxctrl ./cmd/traxctrl
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /out/traxcoord ./cmd/traxcoord
+
+FROM debian:bookworm-slim
+RUN apt-get update && apt-get install -y ca-certificates curl && rm -rf /var/lib/apt/lists/*
+COPY --from=build /out/traxctrl /usr/local/bin/traxctrl
+COPY --from=build /out/traxcoord /usr/local/bin/traxcoord
+ENTRYPOINT ["/usr/local/bin/traxctrl"]

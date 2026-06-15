@@ -1,0 +1,130 @@
+/* SoulForge wiki — dark palette + Mermaid toolbar. Loaded by the generated index.html. */
+:root {
+  --theme-color:#a78bfa; --sf-bg:#0f1117; --sf-panel:#0b0d12; --sf-code:#161b22;
+  --sf-text:#cdd3de; --sf-head:#eaeef6; --sf-border:#222a3a; --sf-link:#8ab4ff;
+}
+body, .sidebar, .content { background:var(--sf-bg); }
+.sidebar { background:var(--sf-panel); border-right:1px solid var(--sf-border); }
+.sidebar ul li a { color:#aab2c0; }
+.sidebar ul li a:hover, .sidebar ul li.active > a, .sidebar ul li a.active { color:var(--theme-color); }
+.app-name-link, .app-name-link b { color:var(--sf-head) !important; }
+.markdown-section { color:var(--sf-text); }
+.markdown-section h1, .markdown-section h2, .markdown-section h3, .markdown-section h4,
+.markdown-section strong { color:var(--sf-head); }
+.markdown-section h2, .markdown-section h1 { border-bottom:1px solid var(--sf-border); padding-bottom:.3em; }
+.markdown-section a { color:var(--sf-link); text-decoration:none; }
+.markdown-section a:hover { color:#aecbff; text-decoration:underline; }
+.markdown-section code, .markdown-section pre { background:var(--sf-code); }
+.markdown-section code { color:#e6b673; }
+.markdown-section pre, .markdown-section pre > code { color:var(--sf-text); }
+.markdown-section blockquote { border-left:4px solid var(--theme-color); background:#141a28; color:#b9c0cc; }
+.markdown-section blockquote p { color:#b9c0cc; }
+.markdown-section table th { background:var(--sf-code); color:var(--sf-head); }
+.markdown-section table td, .markdown-section table th { border:1px solid var(--sf-border); color:var(--sf-text); }
+.markdown-section tr { background:transparent; border-top:1px solid var(--sf-border); }
+.markdown-section table tr:nth-child(2n) { background:#151b29; }
+.markdown-section hr { border-bottom:1px solid var(--sf-border); }
+.search input { background:var(--sf-panel); color:var(--sf-text); border:1px solid var(--sf-border); }
+.search .results-panel, .search .matching-post { background:var(--sf-panel); }
+.search p { color:var(--sf-text); }
+
+/* Page-level wiki navigation: Back button + breadcrumb trail based on visited pages. */
+.sf-navtrail {
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  margin:0 0 14px; padding:10px 12px; border:1px solid var(--sf-border);
+  border-radius:8px; background:var(--sf-panel);
+}
+.sf-back {
+  font:inherit; font-size:12px; cursor:pointer; color:var(--sf-text);
+  background:var(--sf-code); border:1px solid var(--sf-border); border-radius:6px; padding:4px 10px;
+}
+.sf-back:hover:not(:disabled) { color:var(--theme-color); border-color:var(--theme-color); }
+.sf-back:disabled { opacity:.45; cursor:default; }
+.sf-crumbs { display:flex; align-items:center; gap:8px; flex-wrap:wrap; min-width:0; }
+.sf-crumb { color:var(--sf-link); text-decoration:none; }
+.sf-crumb:hover { color:#aecbff; text-decoration:underline; }
+.sf-crumb.current { color:var(--sf-head); font-weight:600; }
+.sf-sep { color:#667085; user-select:none; }
+
+/* Mermaid diagram container + toolbar */
+.sf-mermaid { position:relative; margin:1em 0; border:1px solid var(--sf-border); border-radius:8px;
+  background:#0c0f16; padding:8px 8px 4px; }
+.sf-mermaid .sf-bar { display:flex; gap:6px; justify-content:flex-end; margin-bottom:4px; }
+.sf-mermaid .sf-bar button { font:inherit; font-size:12px; cursor:pointer; color:var(--sf-text);
+  background:var(--sf-panel); border:1px solid var(--sf-border); border-radius:6px; padding:2px 8px; }
+.sf-mermaid .sf-bar button:hover { color:var(--theme-color); border-color:var(--theme-color); }
+.sf-mermaid .mermaid { text-align:center; overflow:auto; }
+.sf-mermaid .mermaid svg { max-width:100%; height:auto; }
+.sf-mermaid .sf-src { margin:0; background:var(--sf-code); border-radius:6px; }
+.sf-mermaid .sf-ascii { margin:0; background:var(--sf-code); border-radius:6px; }
+.sf-mermaid .sf-ascii pre { margin:0; background:transparent; }
+.sf-mermaid .sf-ascii code { color:var(--sf-text); white-space:pre; line-height:1.25; }
+
+/* Fenced code blocks — top bar (language on the LEFT, Copy on the RIGHT) + syntax colors.
+   Docsify's theme floats the language label at the top-right via pre[data-lang]::after;
+   we suppress that and show the language in our top bar instead. */
+.markdown-section pre[data-lang]::after { content:none !important; display:none !important; }
+.sf-code { position:relative; margin:1em 0; border:1px solid var(--sf-border); border-radius:8px;
+  overflow:hidden; background:var(--sf-code); }
+.sf-code-bar { display:flex; align-items:center; justify-content:space-between;
+  background:var(--sf-panel); border-bottom:1px solid var(--sf-border); padding:4px 10px; }
+.sf-code-lang { font-family:monospace; font-size:12px; letter-spacing:.04em; color:#9aa4b2; }
+.sf-copy { font:inherit; font-size:12px; cursor:pointer; color:var(--sf-text);
+  background:var(--sf-code); border:1px solid var(--sf-border); border-radius:6px; padding:2px 10px; }
+.sf-copy:hover { color:var(--theme-color); border-color:var(--theme-color); }
+.sf-copy.ok { color:#9ece6a; border-color:#9ece6a; }
+.sf-code pre, .sf-code pre[data-lang] { margin:0 !important; border-radius:0 !important; background:var(--sf-code); }
+
+/* Prism token colors (dark) */
+.markdown-section .token.comment, .token.prolog, .token.doctype, .token.cdata { color:#6a737d; font-style:italic; }
+.markdown-section .token.punctuation { color:#89ddff; }
+.markdown-section .token.keyword, .token.atrule, .token.rule, .token.important { color:#c792ea; }
+.markdown-section .token.boolean, .token.number, .token.constant { color:#f78c6c; }
+.markdown-section .token.string, .token.char, .token.attr-value, .token.inserted { color:#9ece6a; }
+.markdown-section .token.function, .token.class-name { color:#82aaff; }
+.markdown-section .token.property, .token.tag, .token.symbol, .token.attr-name { color:#e6b673; }
+.markdown-section .token.operator, .token.entity, .token.url, .token.variable { color:#89ddff; }
+.markdown-section .token.selector, .token.builtin { color:#c3e88d; }
+.markdown-section .token.deleted { color:#ff5370; }
+
+/* Zoom overlay — wheel to zoom, drag to pan */
+.sf-overlay { position:fixed; inset:0; z-index:9999; background:rgba(8,10,15,.95); overflow:hidden; }
+.sf-overlay-stage { position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  cursor:grab; user-select:none; }
+.sf-overlay-stage.grabbing { cursor:grabbing; }
+.sf-overlay-inner { transform-origin:center center; will-change:transform; }
+/* override mermaid's inline max-width cap; JS sets the actual fill width */
+.sf-overlay-inner svg { max-width:none !important; height:auto; }
+.sf-overlay-close { position:fixed; top:14px; right:18px; z-index:10000; font-size:28px; line-height:1;
+  cursor:pointer; color:var(--sf-head); background:var(--sf-panel);
+  border:1px solid var(--sf-border); border-radius:8px; padding:2px 12px; }
+.sf-overlay-close:hover { color:var(--theme-color); border-color:var(--theme-color); }
+.sf-overlay-ctrls { position:fixed; top:14px; left:18px; z-index:10000; display:flex; gap:6px; }
+.sf-overlay-ctrls button { font:inherit; font-size:16px; width:34px; height:30px; cursor:pointer;
+  color:var(--sf-text); background:var(--sf-panel); border:1px solid var(--sf-border); border-radius:8px; }
+.sf-overlay-ctrls button:hover { color:var(--theme-color); border-color:var(--theme-color); }
+.sf-overlay-hint { position:fixed; bottom:14px; left:50%; transform:translateX(-50%); z-index:10000;
+  color:#9aa4b2; font-size:12px; background:var(--sf-panel); border:1px solid var(--sf-border);
+  border-radius:6px; padding:3px 10px; }
+
+/* Task lists / checkboxes — custom-styled but READ-ONLY (state lives in the markdown).
+   The checkbox hangs in the left gutter (absolutely positioned) so the item text/inline-code
+   flow as a normal paragraph — NOT as flex items (which shattered the line layout). */
+.markdown-section ul.task-list, .markdown-section ul.task-list ul.task-list { list-style:none; padding-left:.6em; }
+.markdown-section li.task-list-item { position:relative; margin:.32em 0; padding-left:1.9em; }
+.markdown-section li.task-list-item > label { cursor:default; }
+.markdown-section li.task-list-item input[type=checkbox] {
+  appearance:none; -webkit-appearance:none; position:absolute; left:0; top:.2em;
+  width:18px; height:18px; margin:0; border:1.5px solid var(--sf-border); border-radius:5px;
+  background:var(--sf-code); cursor:default; }
+.markdown-section li.task-list-item input[type=checkbox]:checked {
+  background:var(--theme-color); border-color:var(--theme-color); }
+.markdown-section li.task-list-item input[type=checkbox]:checked::after {
+  content:""; position:absolute; left:5px; top:1px; width:5px; height:10px;
+  border:solid #0f1117; border-width:0 2px 2px 0; transform:rotate(45deg); }
+.markdown-section li.task-list-item.sf-done > label { color:#8b93a1; }
+/* per-list progress chip */
+.markdown-section .sf-progress { display:inline-block; font:600 12px/1.6 monospace; color:#9aa4b2;
+  background:var(--sf-panel); border:1px solid var(--sf-border); border-radius:11px;
+  padding:1px 10px; margin:.1em 0 .5em; }
+.markdown-section .sf-progress.done { color:#9ece6a; border-color:#9ece6a; }
