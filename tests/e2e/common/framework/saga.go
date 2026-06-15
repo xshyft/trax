@@ -759,7 +759,7 @@ func StartExecutorsViaDockerExec(t *testing.T, executors []ExecutorConfig, clust
 		// This avoids double-shell quoting issues with JSON values.
 		dockerArgs := []string{
 			"exec", "-d", "trax-traxcli-submitter-1",
-			"/usr/local/bin/traxcli", "traxcli", "executor",
+			"/usr/local/bin/traxcli", "executor",
 			"--trax-cluster-id=" + clusterID,
 			"--rabbitmq-url=amqp://guest:guest@rabbitmq:5672/",
 			"--saga-template-id=" + e.SagaTemplateID,
