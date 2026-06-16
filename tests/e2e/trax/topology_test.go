@@ -5,10 +5,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/xshyft/trax/pkg/trax"
-	"github.com/xshyft/trax/tests/e2e/common/framework"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/xshyft/trax/pkg/trax"
+	"github.com/xshyft/trax/tests/e2e/common/framework"
 )
 
 // TestTopicExchangeTopology verifies that the TRAX topic exchange is correctly

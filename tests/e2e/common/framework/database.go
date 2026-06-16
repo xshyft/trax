@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/xshyft/trax/pkg/common"
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/require"
+	"github.com/xshyft/trax/pkg/common"
 )
 
 // SetupTestDatabase creates an isolated test database with random name

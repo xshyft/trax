@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/xshyft/trax/pkg/common"
 	"github.com/stretchr/testify/require"
+	"github.com/xshyft/trax/pkg/common"
 )
 
 // GetServiceBaseURL returns the base URL for a service

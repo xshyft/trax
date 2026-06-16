@@ -4,9 +4,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
 	"github.com/xshyft/trax/pkg/trax"
 	"github.com/xshyft/trax/tests/e2e/common/framework"
-	"github.com/stretchr/testify/require"
 )
 
 // TestSevenStepSaga tests a complete 7-step saga workflow

@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
 	"github.com/xshyft/trax/pkg/trax"
 	"github.com/xshyft/trax/tests/e2e/common/framework"
-	"github.com/stretchr/testify/require"
 )
 
 // setupIdempotencyEnv creates a fresh E2E environment with the seven_step_sleep_saga template.
