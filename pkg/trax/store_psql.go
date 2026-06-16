@@ -12,8 +12,8 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/xshyft/trax/pkg/common"
 	"github.com/lib/pq"
+	"github.com/xshyft/trax/pkg/common"
 )
 
 type psqlStore struct {

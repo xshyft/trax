@@ -4,8 +4,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/xshyft/trax/pkg/common"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"github.com/xshyft/trax/pkg/common"
 )
 
 // Note: These are unit tests that don't require real RabbitMQ connection.

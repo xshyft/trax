@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/xshyft/trax/pkg/common"
 	"github.com/stretchr/testify/require"
+	"github.com/xshyft/trax/pkg/common"
 	"go.uber.org/zap"
 )
 

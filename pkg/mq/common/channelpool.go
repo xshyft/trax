@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/xshyft/trax/pkg/common"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"github.com/xshyft/trax/pkg/common"
 )
 
 // ChannelPool manages a pool of RabbitMQ channels for thread-safe operations
