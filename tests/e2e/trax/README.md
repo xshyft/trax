@@ -145,7 +145,7 @@ The test uses 7 traxcli executors running in **simulation mode**:
 Example executor configuration:
 ```yaml
 executor-step1:
-  image: localhost:5555/trax.clis:${BRANCH_TAG}
+  image: xshyft/trax.clis:${BRANCH_TAG}
   command:
     - "traxcli"
     - "executor"

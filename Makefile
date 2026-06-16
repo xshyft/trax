@@ -1,4 +1,4 @@
-REGISTRY ?= localhost:5555
+REGISTRY ?= xshyft
 IMAGE_DAEMONS ?= trax.daemons
 IMAGE_CLIS ?= trax.clis
 TAG ?= latest
@@ -61,7 +61,7 @@ trax-e2e-clean:
 	TEST_SESSION_ID=$(TEST_SESSION_ID) docker compose -f tests/e2e/trax/docker-compose.yaml down -v --remove-orphans || true
 
 trax-e2e-up:
-	TEST_SESSION_ID=$(TEST_SESSION_ID) BRANCH_TAG=$(TAG) docker compose -f tests/e2e/trax/docker-compose.yaml up -d --wait --scale test-runner=0
+	TEST_SESSION_ID=$(TEST_SESSION_ID) REGISTRY=$(REGISTRY) BRANCH_TAG=$(TAG) docker compose -f tests/e2e/trax/docker-compose.yaml up -d --wait --scale test-runner=0
 
 trax-e2e-down:
 	TEST_SESSION_ID=$(TEST_SESSION_ID) docker compose -f tests/e2e/trax/docker-compose.yaml down
@@ -72,5 +72,5 @@ trax-e2e-logs:
 trax-e2e-full: trax-e2e-clean
 	@set -e; \
 	trap 'TEST_SESSION_ID=$(TEST_SESSION_ID) docker compose -f tests/e2e/trax/docker-compose.yaml down -v --remove-orphans' EXIT; \
-	TEST_SESSION_ID=$(TEST_SESSION_ID) BRANCH_TAG=$(TAG) docker compose -f tests/e2e/trax/docker-compose.yaml up -d --wait --scale test-runner=0; \
-	TEST_SESSION_ID=$(TEST_SESSION_ID) BRANCH_TAG=$(TAG) docker compose -f tests/e2e/trax/docker-compose.yaml run --rm test-runner
+	TEST_SESSION_ID=$(TEST_SESSION_ID) REGISTRY=$(REGISTRY) BRANCH_TAG=$(TAG) docker compose -f tests/e2e/trax/docker-compose.yaml up -d --wait --scale test-runner=0; \
+	TEST_SESSION_ID=$(TEST_SESSION_ID) REGISTRY=$(REGISTRY) BRANCH_TAG=$(TAG) docker compose -f tests/e2e/trax/docker-compose.yaml run --rm test-runner

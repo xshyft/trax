@@ -56,10 +56,12 @@ Builds:
 
 Defaults:
 
-- `REGISTRY=localhost:5555`
+- `REGISTRY=xshyft`
 - `IMAGE_DAEMONS=trax.daemons`
 - `IMAGE_CLIS=trax.clis`
 - `TAG=latest`
+
+The default image names therefore resolve to Docker Hub repositories such as `xshyft/trax.daemons:latest`.
 
 ## Wiki
 

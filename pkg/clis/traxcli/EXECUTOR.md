@@ -68,7 +68,7 @@ make bip
 
 This command:
 - Builds all Docker images (`bi` = build images)
-- Pushes them to the local registry at `localhost:5555` (`p` = push)
+- Pushes them to the configured registry namespace, now `xshyft` on Docker Hub (`p` = push)
 
 **Note:** The local registry must be running on port 5555. If not, run:
 ```bash
