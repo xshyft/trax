@@ -55,6 +55,7 @@ TRAX is a standalone distributed workflow and saga orchestration system extracte
 - [Configuration](operations/configuration.md)
 - [Local Run](operations/local-run.md)
 - [Make Targets](operations/make-targets.md)
+- [Release Flow](operations/release-flow.md)
 - [Deployment Notes](operations/deployment.md)
 - [Testing and E2E Operations](operations/testing.md)
 

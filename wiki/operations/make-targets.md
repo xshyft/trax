@@ -17,7 +17,7 @@ DOCKER_CONFIG=/absolute/path/to/docker-config
 make build-daemons
 ```
 
-Builds:
+Builds the Linux daemon binaries through the containerized Go builder flow and writes:
 
 - `bin/traxctrl`
 - `bin/traxcoord`
@@ -26,9 +26,19 @@ Builds:
 make build-clis
 ```
 
-Builds:
+Builds the Linux CLI binary through the containerized Go builder flow and writes:
 
 - `bin/traxcli`
+
+The binary build flow mirrors the older daemons2 pattern: a Linux Go builder container runs
+against the checked-out repo and writes artifacts into `bin/`. The host OS does not compile the
+release binaries directly.
+
+Defaults:
+
+- `DOCKER_HUB_REGISTRY=xshyft`
+- `GOLANG_BUILDER_TAG=1.24.latest`
+- `GOLANG_BUILDER_IMAGE=$(DOCKER_HUB_REGISTRY)/golang-builder:$(GOLANG_BUILDER_TAG)`
 
 ## Tests
 
@@ -62,26 +72,28 @@ make push-images
 
 Builds:
 
-- `$(REGISTRY)/$(IMAGE_DAEMONS):$(TAG)` from `Dockerfile.daemons`
-- `$(REGISTRY)/$(IMAGE_CLIS):$(TAG)` from `Dockerfile.clis`
+- `$(REGISTRY)/$(IMAGE_DAEMONS):$(BRANCH_TAG)` and `$(REGISTRY)/$(IMAGE_DAEMONS):$(HASH_TAG)` from `Dockerfile.daemons`
+- `$(REGISTRY)/$(IMAGE_CLIS):$(BRANCH_TAG)` and `$(REGISTRY)/$(IMAGE_CLIS):$(HASH_TAG)` from `Dockerfile.clis`
 
 Defaults:
 
 - `REGISTRY=xshyft`
 - `IMAGE_DAEMONS=trax.daemons`
 - `IMAGE_CLIS=trax.clis`
-- `TAG=latest`
+- `BRANCH` comes from `git rev-parse --abbrev-ref HEAD`; detached HEAD remains `HEAD`
+- `HASH_TAG` is the full `git rev-parse HEAD` commit hash
+- `BRANCH_TAG` is `latest` on `main`; otherwise it is the branch name with `/` replaced by `-`
 
-The default image names therefore resolve to Docker Hub repositories such as `xshyft/trax.daemons:latest`.
+The default image names therefore resolve to Docker Hub repositories such as `xshyft/trax.daemons:latest` and `xshyft/trax.daemons:<commit-hash>`.
 
-`make bi` first rebuilds the local daemon and CLI binaries, then builds both Docker images.
+`make bi` first runs the Linux binary build flow and then builds both Docker images.
 
 ```bash
 make push-images
 make bip
 ```
 
-`make push-images` pushes the already-built daemon and CLI images to the configured registry namespace using the active `TAG`.
+`make push-images` pushes both the branch tag and the commit-hash tag for the daemon and CLI images.
 
 `make bip` runs `make bi` and then `make push-images`.
 
@@ -101,6 +113,24 @@ Defaults:
 - `DOCKER_USERNAME=$(REGISTRY)`
 
 That means the default login user is also `xshyft` unless you override it locally.
+
+## Release
+
+```bash
+make release
+make release-resume
+make release-status
+make release-reset
+```
+
+These targets wrap `scripts/release.sh`.
+
+- `make release` starts a resumable release from the current `VERSION`
+- `make release-resume` continues a failed or interrupted release
+- `make release-status` prints the current local release state
+- `make release-reset` clears only the local release-state file
+
+See [Release Flow](release-flow.md) for the full sequence and post-release version bump behavior.
 
 ## Wiki
 

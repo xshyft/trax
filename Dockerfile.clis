@@ -1,9 +1,10 @@
-FROM golang:1.24 AS build
-WORKDIR /src
-COPY . .
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /out/traxcli ./cmd/traxcli
-
 FROM debian:bookworm-slim
+ARG version_branch
+ARG version_hash
+ARG build_datetime
+ENV VERSION_BRANCH=${version_branch}
+ENV VERSION_HASH=${version_hash}
+ENV BUILD_DATETIME=${build_datetime}
 RUN apt-get update && apt-get install -y ca-certificates curl && rm -rf /var/lib/apt/lists/*
-COPY --from=build /out/traxcli /usr/local/bin/traxcli
+COPY ./bin/traxcli /usr/local/bin/traxcli
 CMD ["/usr/local/bin/traxcli"]
