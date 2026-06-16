@@ -201,13 +201,25 @@ ask_post_release_bump() {
   fi
 
   local choice
-  echo "[release] choose next version bump after releasing ${RELEASE_VERSION}:"
-  echo "  1) patch"
-  echo "  2) minor"
-  echo "  3) major"
-  echo "  4) none"
-  printf '[release] selection: '
-  read -r choice
+  if [ ! -t 1 ] && [ ! -e /dev/tty ]; then
+    die "no interactive terminal available for next-version prompt; set POST_RELEASE_BUMP=patch|minor|major|none"
+  fi
+
+  {
+    echo "[release] choose next version bump after releasing ${RELEASE_VERSION}:"
+    echo "  1) patch"
+    echo "  2) minor"
+    echo "  3) major"
+    echo "  4) none"
+    printf '[release] selection: '
+  } >&2
+
+  if [ -e /dev/tty ]; then
+    read -r choice < /dev/tty
+  else
+    read -r choice
+  fi
+
   case "$choice" in
     1|patch) echo patch ;;
     2|minor) echo minor ;;
