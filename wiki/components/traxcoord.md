@@ -5,7 +5,6 @@
 ## Code Paths
 
 - entrypoint: `cmd/traxcoord/main.go`
-- legacy wrapper: `cmd/agora/daemons/traxcoord/cmd.go`
 - daemon runtime: `pkg/daemons/traxcoord.go`, `pkg/daemons/traxcoord/run.go`
 - HTTP API: `pkg/daemons/traxcoord/api/v1`
 - core coordinator: `pkg/trax/coordinator.go`

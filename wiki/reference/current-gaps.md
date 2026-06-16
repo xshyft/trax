@@ -6,10 +6,6 @@ This page lists code/wiki/deployment mismatches found during the documentation s
 
 The daemon API packages import generated Swagger packages under `gen-docs/...`. The current `Makefile` `swagger` target only prints a message. A real generation or committed-doc restoration path is needed.
 
-## Old Agora Paths
-
-`cmd/traxcli` still imports `cmd/agora/clis/traxcli`. This works as an extraction bridge, but the package path should eventually be renamed.
-
 ## Placeholder Daemon Run Files
 
 `pkg/daemons/traxcoord/run.go` and `pkg/daemons/traxctrl/run.go` are old placeholder consumers and are not the real startup path. They should be removed or clearly deprecated in code after confirming no caller uses them.

@@ -55,10 +55,8 @@ Startup behavior in `pkg/daemons/traxctrl.go`:
 Binary:
 
 ```text
-cmd/traxcli/main.go -> cmd/agora/clis/traxcli.NewTraxCli()
+cmd/traxcli/main.go -> cmd/traxcli/cmd.NewTraxCli()
 ```
-
-This is still using an inherited package path from `daemons2`. The standalone entrypoint exists, but the cobra command package should eventually move out of `cmd/agora/...`.
 
 ## Placeholder Paths
 

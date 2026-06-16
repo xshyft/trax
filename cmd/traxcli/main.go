@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	traxclicmd "github.com/xshyft/trax/cmd/agora/clis/traxcli"
+	traxclicmd "github.com/xshyft/trax/cmd/traxcli/cmd"
 )
 
 func main() {

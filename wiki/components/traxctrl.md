@@ -5,7 +5,6 @@
 ## Code Paths
 
 - entrypoint: `cmd/traxctrl/main.go`
-- legacy wrapper: `cmd/agora/daemons/traxctrl/cmd.go`
 - daemon runtime: `pkg/daemons/traxctrl.go`, `pkg/daemons/traxctrl/run.go`
 - HTTP API: `pkg/daemons/traxctrl/api/v1`
 

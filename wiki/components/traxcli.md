@@ -5,7 +5,7 @@
 ## Code Paths
 
 - entrypoint: `cmd/traxcli/main.go`
-- legacy cobra package: `cmd/agora/clis/traxcli`
+- cobra package: `cmd/traxcli/cmd`
 - runtime package: `pkg/clis/traxcli`
 - executor notes: `pkg/clis/traxcli/EXECUTOR.md`
 
@@ -25,6 +25,6 @@ In executor mode, `traxcli` binds a worker to a cluster, saga template, and saga
 
 In submitter mode, `traxcli` announces to `traxcoord`, receives cluster routing data, publishes saga submission requests, and can wait for completion through `traxctrl`.
 
-## Current Extraction Note
+## Current Layout Note
 
-Some CLI code still lives under `cmd/agora/clis/traxcli` because it was copied from `daemons2`. The standalone entrypoint exists at `cmd/traxcli/main.go`; future cleanup should move package names and paths away from old Agora naming where practical.
+`traxcli` now keeps its Cobra command package under `cmd/traxcli/cmd`, while the reusable runtime stays under `pkg/clis/traxcli`.

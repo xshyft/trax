@@ -11,8 +11,8 @@ func NewTraxCli() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "traxcli [command]",
-		Short: "Agora trax CLI - interactive shell or direct commands",
-		Long: `Agora trax CLI provides both interactive shell mode and direct command execution.
+		Short: "TRAX CLI - interactive shell or direct commands",
+		Long: `TRAX CLI provides both interactive shell mode and direct command execution.
 
 Interactive mode (default):
   traxcli

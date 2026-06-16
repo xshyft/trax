@@ -6,7 +6,7 @@ This page maps the current repository layout to runtime responsibility. It is me
 
 - `cmd/traxcoord/main.go`: binary entrypoint for the coordinator daemon. Calls `daemons.RunTraxCoordinator()`.
 - `cmd/traxctrl/main.go`: binary entrypoint for the control daemon. Parses `--in-memory-store`, then calls `daemons.RunTraxCtrl(...)`.
-- `cmd/traxcli/main.go`: binary entrypoint for the CLI. Calls the still-inherited package `cmd/agora/clis/traxcli`.
+- `cmd/traxcli/main.go`: binary entrypoint for the CLI. Calls the local Cobra command package `cmd/traxcli/cmd`.
 
 ## Core Runtime
 
@@ -36,7 +36,7 @@ This page maps the current repository layout to runtime responsibility. It is me
 
 ## CLI
 
-- `cmd/agora/clis/traxcli`: inherited cobra command package used by `cmd/traxcli`.
+- `cmd/traxcli/cmd`: Cobra command package used by `cmd/traxcli`.
 - `pkg/clis/traxcli/main.go`: interactive/direct API CLI implementation.
 - `pkg/clis/traxcli/executor.go`: executor command runtime and simulation/shell idempotent service.
 - `pkg/clis/traxcli/EXECUTOR.md`: executor usage notes inherited from source repo.
