@@ -11,7 +11,7 @@ WIKI_DIR ?= wiki
 WIKI_PORT ?= 3334
 WIKI_HTML ?= $(WIKI_DIR)/index.html
 
-.PHONY: build-daemons build-clis test-unit swagger images docker-login trax-e2e-up trax-e2e-down trax-e2e-clean trax-e2e-full trax-e2e-logs wiki
+.PHONY: build-daemons build-clis test-unit swagger images push-images bi bip docker-login trax-e2e-up trax-e2e-down trax-e2e-clean trax-e2e-full trax-e2e-logs wiki
 
 build-daemons:
 	go build -o ./bin/traxctrl ./cmd/traxctrl
@@ -29,6 +29,17 @@ swagger:
 images:
 	$(DOCKER) build -f Dockerfile.daemons -t $(REGISTRY)/$(IMAGE_DAEMONS):$(TAG) .
 	$(DOCKER) build -f Dockerfile.clis -t $(REGISTRY)/$(IMAGE_CLIS):$(TAG) .
+
+bi: build-daemons build-clis images
+
+
+push-images:
+	$(DOCKER) push $(REGISTRY)/$(IMAGE_DAEMONS):$(TAG)
+	$(DOCKER) push $(REGISTRY)/$(IMAGE_CLIS):$(TAG)
+
+
+bip: bi push-images
+
 
 docker-login:
 	@[ -n "$(DOCKER_CONFIG)" ] || { echo "DOCKER_CONFIG is not set. Put it in .env.local, for example: DOCKER_CONFIG=/absolute/path/to/docker-config"; exit 1; }

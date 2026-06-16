@@ -56,6 +56,8 @@ Currently only prints that committed Swagger docs are used. The code imports `ge
 
 ```bash
 make images
+make bi
+make push-images
 ```
 
 Builds:
@@ -71,6 +73,17 @@ Defaults:
 - `TAG=latest`
 
 The default image names therefore resolve to Docker Hub repositories such as `xshyft/trax.daemons:latest`.
+
+`make bi` first rebuilds the local daemon and CLI binaries, then builds both Docker images.
+
+```bash
+make push-images
+make bip
+```
+
+`make push-images` pushes the already-built daemon and CLI images to the configured registry namespace using the active `TAG`.
+
+`make bip` runs `make bi` and then `make push-images`.
 
 ## Docker Login
 
