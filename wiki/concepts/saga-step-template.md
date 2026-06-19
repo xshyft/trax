@@ -14,7 +14,9 @@ Store table: `trax.saga_step_templates`
 - `description`: longer explanation.
 - `labels`: JSON object for structured filtering.
 - `tags`: JSON array for loose categorization.
-- `metadata`: JSON object for executor hints.
+- `metadata`: JSON object for executor hints. Recognized entries include
+  [`step_configuration`](step-configuration.md) (a serialized JSON object carrying
+  `execution_timeout_msec` / `compensation_timeout_msec`).
 
 ## Runtime Meaning
 
@@ -34,6 +36,7 @@ Executors bind with an affinity wildcard so any coordinator affinity can send re
 
 - [Saga Template](saga-template.md): parent workflow definition.
 - [Saga Step Instance](saga-step-instance.md): runtime execution record created from this template.
+- [Step Configuration](step-configuration.md): per-step timeouts declared in this template's `metadata`.
 - [Executor](executor.md): worker that handles this step's route.
 - [RabbitMQ Routing](rabbitmq-routing.md): maps the step template to request and response routes.
 - [Template Hot Reload](template-hot-reload.md): initializes executor queues for newly loaded step templates.

@@ -871,6 +871,10 @@ type SagaStepExecutionRequestPayload struct {
 	CoordinatorAffinity string            `json:"coordinator_affinity"`
 	Input               map[string]string `json:"input"`
 	Extra               map[string]string `json:"extra"`
+	// Metadata carries the saga-step-instance metadata (which includes "step_configuration") so the
+	// executor can apply per-step timeouts and expose the metadata to the IdempotentService without
+	// any database access.
+	Metadata map[string]string `json:"metadata,omitempty"`
 	// Sub-saga hierarchy context (propagated from saga instance to step execution)
 	RootSagaInstanceId string `json:"root_saga_instance_id,omitempty"`
 	SagaDepth          int    `json:"saga_depth,omitempty"`
@@ -960,6 +964,12 @@ func (b *SagaStepExecutionRequestPayloadBuilder) AddExtraEntry(key, value string
 	return b
 }
 
+// Metadata sets the Metadata field (the saga-step-instance metadata, incl. "step_configuration")
+func (b *SagaStepExecutionRequestPayloadBuilder) Metadata(metadata map[string]string) *SagaStepExecutionRequestPayloadBuilder {
+	b.payload.Metadata = metadata
+	return b
+}
+
 // RootSagaInstanceId sets the root saga instance ID in the hierarchy
 func (b *SagaStepExecutionRequestPayloadBuilder) RootSagaInstanceId(id string) *SagaStepExecutionRequestPayloadBuilder {
 	b.payload.RootSagaInstanceId = id
@@ -985,6 +995,10 @@ type SagaStepCompensationRequestPayload struct {
 	CoordinatorAffinity string            `json:"coordinator_affinity"`
 	Input               map[string]string `json:"input"`
 	Extra               map[string]string `json:"extra"`
+	// Metadata carries the saga-step-instance metadata (which includes "step_configuration") so the
+	// executor can apply the per-step compensation timeout and expose the metadata to the
+	// IdempotentService without any database access.
+	Metadata map[string]string `json:"metadata,omitempty"`
 	// Sub-saga hierarchy context (propagated from saga instance to step compensation)
 	RootSagaInstanceId string `json:"root_saga_instance_id,omitempty"`
 	SagaDepth          int    `json:"saga_depth,omitempty"`
@@ -1071,6 +1085,12 @@ func (b *SagaStepCompensationRequestPayloadBuilder) AddExtraEntry(key, value str
 		b.payload.Extra = make(map[string]string)
 	}
 	b.payload.Extra[key] = value
+	return b
+}
+
+// Metadata sets the Metadata field (the saga-step-instance metadata, incl. "step_configuration")
+func (b *SagaStepCompensationRequestPayloadBuilder) Metadata(metadata map[string]string) *SagaStepCompensationRequestPayloadBuilder {
+	b.payload.Metadata = metadata
 	return b
 }
 

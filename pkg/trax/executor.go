@@ -6,10 +6,19 @@ import (
 	"errors"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/xshyft/trax/pkg/common"
 	"github.com/xshyft/trax/pkg/execpl"
 )
+
+// DefaultExecutorCallbackTimeout is the consumer-level MQ callback ceiling the executor registers on
+// its inbox. It is intentionally generous: the real per-step deadline is the step's
+// ExecutionTimeoutMsec / CompensationTimeoutMsec (from step_configuration), enforced per message
+// below. This ceiling is a safety backstop only — it must merely exceed the largest configured step
+// timeout so the MQ layer never cancels a legitimate long-running step mid-flight. Set high to leave
+// headroom for intensive tasks; override per-executor with WithExecutorCallbackTimeout.
+const DefaultExecutorCallbackTimeout = 2 * time.Hour
 
 type SagaStepExecutor interface {
 	ClusterId() string
@@ -31,6 +40,10 @@ type sagaStepExecutor struct {
 	// When set, a SagaContext is injected into ctx for IdempotentService calls.
 	sagaSubmitter SagaSubmitter
 	traxCtrlURL   string
+
+	// callbackTimeout is the consumer-level MQ callback ceiling for the inbox (see
+	// DefaultExecutorCallbackTimeout). The actual per-step deadline is applied per message.
+	callbackTimeout time.Duration
 
 	// In-flight guard: prevents duplicate concurrent execution/compensation for the same key.
 	// When the MQ callback timeout (180s) fires before a long-running ExecuteSync completes
@@ -65,6 +78,17 @@ func WithExecutorTraxCtrlURL(url string) ExecutorOption {
 	return func(e *sagaStepExecutor) { e.traxCtrlURL = url }
 }
 
+// WithExecutorCallbackTimeout overrides the consumer-level MQ callback ceiling on the inbox
+// (default DefaultExecutorCallbackTimeout). It must exceed the largest configured per-step timeout;
+// the real per-step deadline still comes from step_configuration.
+func WithExecutorCallbackTimeout(d time.Duration) ExecutorOption {
+	return func(e *sagaStepExecutor) {
+		if d > 0 {
+			e.callbackTimeout = d
+		}
+	}
+}
+
 func NewExecutor(
 	mqClient MQClient,
 	clusterId, sagaTemplateId, sagaStepTemplateId string,
@@ -77,6 +101,7 @@ func NewExecutor(
 		sagaTemplateId:     sagaTemplateId,
 		sagaStepTemplateId: sagaStepTemplateId,
 		idempotentService:  idempotentService,
+		callbackTimeout:    DefaultExecutorCallbackTimeout,
 		inFlightExec:       make(map[string]*inFlightEntry),
 		inFlightComp:       make(map[string]*inFlightEntry),
 	}
@@ -234,7 +259,9 @@ func (e *sagaStepExecutor) detachExecution(
 		sagaSubmitter:            e.sagaSubmitter,
 		traxCtrlURL:              e.traxCtrlURL,
 	}
-	detachedCtx := WithSagaContext(context.Background(), detachedSagaCtx)
+	// Sub-saga executors poll for 10+ minutes, so the detached path intentionally does NOT impose
+	// the step's execution timeout. The step-instance metadata is still exposed to the impl.
+	detachedCtx := withStepMetadata(WithSagaContext(context.Background(), detachedSagaCtx), req.Metadata)
 
 	go func() {
 		common.L.Info(fmt.Sprintf(
@@ -443,11 +470,18 @@ func (e *sagaStepExecutor) Run(ctx context.Context) error {
 									}
 									execCtx = WithSagaContext(ctx, sagaCtx)
 								}
+								// Expose the step-instance metadata to the impl, and bound execution by the
+								// step's ExecutionTimeoutMsec from step_configuration (180s default when unset).
+								execCtx = withStepMetadata(execCtx, executionRequest.Metadata)
+								stepCfg := ParseStepConfiguration(executionRequest.Metadata)
+								execCtx, cancelExec := context.WithTimeout(
+									execCtx, time.Duration(stepCfg.ExecutionTimeoutMsec)*time.Millisecond)
 								result, err := e.idempotentService.ExecuteSync(
 									execCtx,
 									sagaStepInstanceIdempotencyKey,
 									executionRequest.Input,
 								)
+								cancelExec()
 								if err != nil {
 									errMsg := fmt.Sprintf("failed to execute saga step instance with idempotent key '%s': %v",
 										sagaStepInstanceIdempotencyKey, err)
@@ -581,11 +615,18 @@ func (e *sagaStepExecutor) Run(ctx context.Context) error {
 								}
 								compCtx = WithSagaContext(ctx, sagaCtx)
 							}
+							// Expose the step-instance metadata to the impl, and bound compensation by the
+							// step's CompensationTimeoutMsec from step_configuration (180s default when unset).
+							compCtx = withStepMetadata(compCtx, compensationRequest.Metadata)
+							stepCfg := ParseStepConfiguration(compensationRequest.Metadata)
+							compCtx, cancelComp := context.WithTimeout(
+								compCtx, time.Duration(stepCfg.CompensationTimeoutMsec)*time.Millisecond)
 							result, err := e.idempotentService.CompensateSync(
 								compCtx,
 								sagaStepInstanceIdempotencyKey,
 								compensationRequest.Input,
 							)
+							cancelComp()
 							if err != nil {
 								errMsg := fmt.Sprintf("failed to compensate saga step instance with idempotent key '%s': %v",
 									sagaStepInstanceIdempotencyKey, err)
@@ -647,6 +688,7 @@ func (e *sagaStepExecutor) Run(ctx context.Context) error {
 				common.F(ctx)...)
 			return nil
 		},
+		e.callbackTimeout,
 	)
 	return nil
 }

@@ -2257,6 +2257,7 @@ func (c *defaultSagaCoordinator) processSagaStep(
 								CoordinatorAffinity(c.affinityGroup).
 								Input(sagaStepInput).
 								Extra(map[string]string{}).
+								Metadata(sagaStepInstance.Metadata).
 								RootSagaInstanceId(sagaInstance.RootSagaInstanceId).
 								SagaDepth(sagaInstance.SagaDepth).
 								Build().
@@ -2869,6 +2870,7 @@ func (c *defaultSagaCoordinator) processSagaStep(
 								CoordinatorAffinity(c.affinityGroup).
 								Input(compensationInput).
 								Extra(map[string]string{}).
+								Metadata(sagaStepInstance.Metadata).
 								RootSagaInstanceId(sagaInstance.RootSagaInstanceId).
 								SagaDepth(sagaInstance.SagaDepth).
 								Build().

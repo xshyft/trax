@@ -11,6 +11,13 @@ Code type: `pkg/trax/idempotent_service.go` -> `IdempotentService`
 - `CompensateSync(ctx, idempotencyKey, input)`
 - `CompensateAsync(ctx, idempotencyKey, input, callback)`
 
+## Context
+
+The `ctx` the executor passes in is already bounded by the step's
+[execution / compensation timeout](step-configuration.md), so a slow implementation is cancelled at
+the configured deadline. The same context also carries the step-instance metadata — read it with
+`trax.StepMetadataFromContext(ctx)` (no database access required).
+
 ## Result
 
 `IdempotentServiceExecutionResult` returns:

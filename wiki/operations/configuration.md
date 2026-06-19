@@ -25,6 +25,25 @@ This page records runtime configuration discovered from the current code.
 - `TRAX_EXECUTION_TIMEOUT_MS`: optional; step execution timeout in milliseconds. Default is 900000 ms, or 15 minutes.
 - `TRAX_TEMPLATE_RELOAD_INTERVAL`: optional; Go duration string. Default is 10 seconds.
 
+## Executor / Per-step Timeouts
+
+Per-step execution and compensation timeouts are **data, not environment** — they live in the step
+template's `metadata["step_configuration"]` (see [Step Configuration](../concepts/step-configuration.md)):
+
+```json
+{ "execution_timeout_msec": 900000, "compensation_timeout_msec": 180000 }
+```
+
+Each field defaults to **180000 ms (180 s)** when absent. The executor enforces these per message.
+
+Executor-level (code, not env):
+
+- `DefaultExecutorCallbackTimeout`: consumer-level MQ callback ceiling, default **2 h**; a safety
+  backstop above the largest configured step timeout. Override per executor with
+  `WithExecutorCallbackTimeout`.
+- The generic MQ callback default (for non-executor consumers) is **180 s**; widen any consumer with
+  `ConsumeOptions.CallbackTimeout`.
+
 ## RabbitMQ Tuning
 
 - `RABBITMQ_MAX_CHANNELS`: optional channel pool size. Default is 500.

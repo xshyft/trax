@@ -6,6 +6,7 @@ TRAX has a real concept model. This index lists the first-class concepts that sh
 
 - [Saga Template](saga-template.md)
 - [Saga Step Template](saga-step-template.md)
+- [Step Configuration](step-configuration.md)
 - [Template Hot Reload](template-hot-reload.md)
 
 ## Workflow Runtime

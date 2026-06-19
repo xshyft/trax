@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/xshyft/trax/pkg/execpl"
 	mqcommon "github.com/xshyft/trax/pkg/mq/common"
@@ -150,6 +151,7 @@ type MQClient interface {
 		nodeName string,
 		messageHandler SagaMessageHandlerFn,
 		errorHandler ErrorHandlerFn,
+		callbackTimeouts ...time.Duration,
 	)
 	RawConsumeNodeAsync(
 		ctx context.Context,
@@ -199,25 +201,36 @@ func (r *rabbitMQClient) ConsumeNodeAsync(
 	nodeName string,
 	messageHandler SagaMessageHandlerFn,
 	errorHandler ErrorHandlerFn,
+	callbackTimeouts ...time.Duration,
 ) {
-	mqcommon.ConsumeQueueAsync(
-		ctx, nodeName, func(
-			callbackCtx context.Context, messageType, contentType string, body []byte,
-		) error {
-			if messageType != string(execpl.ExecutionPipelineMessageTypeEnum_Trax) {
-				panic(fmt.Sprintf("unexpected message type: %s", messageType))
-			}
-			var msg TraxMessage
-			err := json.Unmarshal(body, &msg)
-			if err != nil {
-				errorHandler(ctx, err)
-				// track requeues and if needed, move the
-				// message to a dead-letter queue
-				return err
-			}
-			// Use callbackCtx (with timeout) instead of parent ctx for message processing
-			return messageHandler(callbackCtx, messageType, contentType, &msg)
-		})
+	cb := func(
+		callbackCtx context.Context, messageType, contentType string, body []byte,
+	) error {
+		if messageType != string(execpl.ExecutionPipelineMessageTypeEnum_Trax) {
+			panic(fmt.Sprintf("unexpected message type: %s", messageType))
+		}
+		var msg TraxMessage
+		err := json.Unmarshal(body, &msg)
+		if err != nil {
+			errorHandler(ctx, err)
+			// track requeues and if needed, move the
+			// message to a dead-letter queue
+			return err
+		}
+		// Use callbackCtx (with timeout) instead of parent ctx for message processing
+		return messageHandler(callbackCtx, messageType, contentType, &msg)
+	}
+	// An optional callback timeout overrides the consumer-level MQ callback ceiling for this node.
+	// Callers (e.g. the step executor) pass a generous ceiling and enforce the real per-step deadline
+	// themselves; without it the default ConsumeQueue ceiling applies.
+	if len(callbackTimeouts) > 0 && callbackTimeouts[0] > 0 {
+		mqcommon.ConsumeQueueWithOptionsAsync(
+			ctx, nodeName,
+			&mqcommon.ConsumeOptions{RequeueNack: true, CallbackTimeout: callbackTimeouts[0]},
+			cb)
+		return
+	}
+	mqcommon.ConsumeQueueAsync(ctx, nodeName, cb)
 }
 
 func (r *rabbitMQClient) RawConsumeNodeAsync(

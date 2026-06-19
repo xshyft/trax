@@ -30,6 +30,13 @@ Store table: `trax.{cluster}_saga_step_instances`
 - `compensation_result_data`: rollback result map.
 - `execution_history`: execution and compensation attempt logs.
 
+## Metadata
+
+- `metadata`: inherited from the [step template](saga-step-template.md) at creation
+  (`SagaStepInstance.Metadata = SagaStepTemplate.Metadata`). The coordinator copies it onto each
+  execution/compensation request, which is how [step configuration](step-configuration.md) reaches
+  the executor without a database read.
+
 ## Idempotency
 
 The generated step idempotency key format is:
@@ -44,6 +51,7 @@ PostgreSQL enforces uniqueness to protect idempotent step creation.
 
 - [Saga Instance](saga-instance.md): parent runtime workflow.
 - [Saga Step Template](saga-step-template.md): definition this step instance executes.
+- [Step Configuration](step-configuration.md): step timeouts carried on the inherited metadata.
 - [Step State](step-state.md): lifecycle state stored on the step instance.
 - [Execution History](execution-history.md): attempt logs stored on the step instance.
 - [Executor](executor.md): consumes requests and returns results for this step.

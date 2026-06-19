@@ -2,7 +2,30 @@ package trax
 
 import (
 	"testing"
+	"time"
 )
+
+func TestExecutorCallbackTimeoutDefaultAndOption(t *testing.T) {
+	// Default consumer-level callback ceiling.
+	e := NewExecutor(nil, "c1", "saga", "step", nil).(*sagaStepExecutor)
+	if e.callbackTimeout != DefaultExecutorCallbackTimeout {
+		t.Errorf("default callbackTimeout = %v, want %v", e.callbackTimeout, DefaultExecutorCallbackTimeout)
+	}
+
+	// Override via option.
+	e2 := NewExecutor(nil, "c1", "saga", "step", nil,
+		WithExecutorCallbackTimeout(45*time.Minute)).(*sagaStepExecutor)
+	if e2.callbackTimeout != 45*time.Minute {
+		t.Errorf("overridden callbackTimeout = %v, want %v", e2.callbackTimeout, 45*time.Minute)
+	}
+
+	// A non-positive override is ignored (keeps the default).
+	e3 := NewExecutor(nil, "c1", "saga", "step", nil,
+		WithExecutorCallbackTimeout(0)).(*sagaStepExecutor)
+	if e3.callbackTimeout != DefaultExecutorCallbackTimeout {
+		t.Errorf("zero override changed callbackTimeout to %v, want default %v", e3.callbackTimeout, DefaultExecutorCallbackTimeout)
+	}
+}
 
 func TestNewExecutorDefaults(t *testing.T) {
 	// Verify that NewExecutor creates an executor with expected defaults

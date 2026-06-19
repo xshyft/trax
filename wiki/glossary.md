@@ -3,6 +3,7 @@
 - **TRAX**: standalone distributed workflow and saga orchestration system.
 - **Saga template**: durable workflow definition containing ordered saga-step template IDs plus labels, tags, and metadata. See [Saga Template](concepts/saga-template.md).
 - **Saga step template**: durable definition of one executable workflow step. See [Saga Step Template](concepts/saga-step-template.md).
+- **Step configuration**: per-step execution/compensation timeouts declared in a step template's `metadata["step_configuration"]` (milliseconds; each defaults to 180000). Applied per message by the executor. See [Step Configuration](concepts/step-configuration.md).
 - **Saga instance**: one runtime execution of a saga template. See [Saga Instance](concepts/saga-instance.md).
 - **Saga step instance**: one runtime execution record for a single step within a saga instance. See [Saga Step Instance](concepts/saga-step-instance.md).
 - **Cluster**: execution namespace used for routing, table partitioning, and coordinator/executor grouping. See [Cluster](concepts/cluster.md).
